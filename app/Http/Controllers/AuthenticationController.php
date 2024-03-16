@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthenticationController extends BaseController
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api')->only(['logout']);
+    }
+
     /**
      * Register a new user.
      *
@@ -36,7 +41,7 @@ class AuthenticationController extends BaseController
             ]);
             $token = $user->createToken('AppName')->accessToken;
 
-            return response()->json([
+            return $this->sendResponse([
                 'user' => new UserResource($user),
                 'token' => $token,
                 'message' => 'User created successfully'
@@ -57,7 +62,7 @@ class AuthenticationController extends BaseController
             $user = auth()->user();
             $token = $user->createToken('AppName')->accessToken;
 
-            return response()->json([
+            return $this->sendResponse([
                 'user' => new UserResource($user),
                 'token' => $token,
                 'message' => 'User logged in successfully'
@@ -76,7 +81,8 @@ class AuthenticationController extends BaseController
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout(Request $request)
-    { $user = Auth::user();
+    {
+        $user = Auth::user();
 
         if ($user) {
             $user->token()->revoke();

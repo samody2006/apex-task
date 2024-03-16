@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('register', [AuthenticationController::class, 'register']);
 Route::post('login', [AuthenticationController::class, 'login']);
 Route::post('logout', [AuthenticationController::class, 'logout']);
-Route::middleware('auth:api')->group( function () {
-    Route::resource('user', 'UserController');
+//Route::apiResource('users', UserController::class);
+Route::middleware('auth:api')->group(function () {
+    Route::apiResource('users', UserController::class);
 });
