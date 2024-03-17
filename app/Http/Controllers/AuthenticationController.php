@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthenticationController extends BaseController
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api')->only(['logout']);
-    }
 
     /**
      * Register a new user.
@@ -39,7 +35,7 @@ class AuthenticationController extends BaseController
                 'password' => bcrypt($request->password),
                 'role' => $request->role,
             ]);
-            $token = $user->createToken('AppName')->accessToken;
+            $token = $user->createToken('Apex')->accessToken;
 
             return $this->sendResponse([
                 'user' => new UserResource($user),
@@ -60,7 +56,7 @@ class AuthenticationController extends BaseController
 
         if (Auth::attempt($credentials)) {
             $user = auth()->user();
-            $token = $user->createToken('AppName')->accessToken;
+            $token = $user->createToken('Apex')->accessToken;
 
             return $this->sendResponse([
                 'user' => new UserResource($user),
@@ -86,10 +82,10 @@ class AuthenticationController extends BaseController
 
         if ($user) {
             $user->token()->revoke();
-
-            return response()->json(['message' => 'Successfully logged out'], 200);
-        } else {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
+        }
+        else{
+        return $this->sendResponse(null, 'User is logout');
         }
     }
 }
