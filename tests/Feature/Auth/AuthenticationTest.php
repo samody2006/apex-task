@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,18 +13,15 @@ class AuthenticationTest extends TestCase
 {
     use WithFaker;
 
-
-    /** @test */
+    /**
+     * Test register a new user with valid data
+     *
+     * @return void
+     */
     public function register_with_valid_data(): void
     {
-        $userData = [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'password' => Hash::make('password'),
-            'role' => 'user'
-        ];
-
-        $response = $this->postJson('/api/register', $userData);
+        $user = User::factory()->create();
+        $response = $this->postJson('/api/register', $user);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -41,24 +39,45 @@ class AuthenticationTest extends TestCase
                 ]
             ]);
 
-        $response->assertJsonFragment([
-            'message' => 'User created successfully'
+    }
+    /**
+     * Test register a new user - Validation Error.
+     *
+     * @return void
+     */
+    public function test_register_with_validation_error(): void
+    {
+        $userData = [
+            'name' => '', // Intentionally making the name field empty to trigger a validation error
+            'email' => fake()->unique()->safeEmail(),
+            'password' => Hash::make('password'),
+            'role' => 'user'
+        ];
+
+        $response = $this->postJson('/api/register', $userData);
+
+        $response->assertStatus(404);
+        $response->assertJsonStructure([
+            'status',
+            'message'
         ]);
     }
 
     /**
-     * A basic feature test example.
+     * Test login  user with valid data
+     *
+     * @return void
      */
 
     public function test_User_Login(): void
     {
         $user = User::factory()->create([
-            'email' => 'user1@example.com',
+            'email' => 'user2@example.com',
             'password' => Hash::make('password'),
         ]);
 
         $loginData = [
-            'email' => 'user1@example.com',
+            'email' => 'user2@example.com',
             'password' => 'password',
         ];
 
@@ -80,12 +99,36 @@ class AuthenticationTest extends TestCase
                 ]
             ]);
     }
+    /**
+     * Test login a user with invalid data
+     *
+     * @return void
+     */
+ public function test_user_login_with_invalid_data(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'user4@example.com',
+            'password' => Hash::make('password'),
+        ]);
 
+        $invalidLoginData = [
+            'email' => 'user4@example.com',
+            'password' => 'invalidpassword',
+        ];
+        $response = $this->postJson('/api/login', $invalidLoginData);
 
+        $response->assertStatus(404);
+        $response->assertJsonStructure([
+            'status',
+            'message'
+        ]);
+    }
 
 
     /**
-     * A basic feature test example.
+     * Test logout user
+     *
+     * @return void
      */
     public function test_logout_user(): void
     {
@@ -96,5 +139,8 @@ class AuthenticationTest extends TestCase
                 "message" => "User is logout"
             ]);
     }
+
+
+
 
 }

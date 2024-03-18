@@ -61,7 +61,7 @@ class UserController extends BaseController
         $user = new User;
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->password = $request->password;
+        $user->password = bcrypt($request->password);
         $user->role = $request->role;
         $user->save();
         $token = $user->createToken('AppName')->accessToken;
@@ -107,11 +107,17 @@ class UserController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
+        $userData = $request->all();
+        if(isset($userData['password'])) {
+            $userData['password'] = bcrypt($userData['password']);
+        $user->update($userData);
 
-        $user->update($request->all());
-            return $this->sendResponse(['user' => new UserResource($user),
-            'message' => 'User updated successfully'], 200);
+        return $this->sendResponse([
+            'user' => new UserResource($user),
+            'message' => 'User updated successfully'
+        ], 200);
     }
+        }
 
     /**
      * Remove the specified resource from storage.
